@@ -1,0 +1,33 @@
+# Dockerfile
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Установка зависимостей
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Установка Chrome и ChromeDriver для Selenium
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$(wget -q -O - https://chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip \
+    && unzip /tmp/chromedriver.zip -d /usr/bin/ \
+    && rm /tmp/chromedriver.zip \
+    && chmod +x /usr/bin/chromedriver
+
+# Копирование файлов приложения
+COPY . .
+
+# Переменные окружения
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=development
+ENV MONGO_URI=mongodb://mongo:27017/web_scraper_db
+
+EXPOSE 5000
+
+CMD ["flask", "run", "--host", "0.0.0.0"]
