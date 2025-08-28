@@ -9,8 +9,7 @@ from models import BookCharacteristick
 import os
 import json
 
-
-class Scrapper:
+class Scraper:
 
     def __init__(self):
         load_dotenv()

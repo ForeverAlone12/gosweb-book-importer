@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, s
 from flask_bootstrap import Bootstrap5
 
 from models import BookCharacteristick
-from scraper import Scrapper
+from scraper import Scraper
 from dotenv import load_dotenv
 
 from api import api_bp
@@ -22,7 +22,9 @@ app.register_blueprint(api_bp)
 @app.route('/')
 def index():
     books = BookService.get_all_books()
-    return render_template('index.html', books=books)
+    subjects = list(set(book.subject for book in books if book.subject))
+    classes = list(set(book.class_from for book in books if book.class_from))
+    return render_template('index.html', books=books, subjects=subjects, classes=classes)
 
 @app.route('/scrape', methods=['POST'])
 def scrape():
@@ -30,7 +32,7 @@ def scrape():
     if not url:
         return redirect(url_for('index'))
 
-    scraper = Scrapper()
+    scraper = Scraper()
 
     # Используем Selenium для скрапинга
     scraped_data = scraper.scrape_with_selenium(url)
@@ -55,7 +57,7 @@ def refresh_book():
         if not url:
             return jsonify({'success': False, 'error': 'URL не указан'})
 
-        scraper = Scrapper()
+        scraper = Scraper()
 
         # Скрапим новые данные
         scraped_data = scraper.scrape_with_selenium(url)

@@ -1,18 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <form action="{{ url_for('scrape') }}" method="post" class="d-flex">
+    <div class="d-flex justify-content-between align-items-center mb-3 me-6">
+        <form action="{{ url_for('scrape') }}" method="post" class="d-flex flex-grow-1">
             <input type="url" name="url" placeholder="Ссылка на учебник" required class="form-control me-2">
             <button type="submit" class="btn btn-primary">Поиск</button>
         </form>
 
         {% if books %}
-            <div>
-                <button class="btn btn-success" id="exportAllBtn">
-                    <i class="bi bi-download"></i> Экспорт всех книг
-                </button>
-            </div>
+            <button class="btn btn-success ms-3" id="exportAllBtn" title="Экспортировать все книги">
+                {{ render_icon('download') }}
+            </button>
         {% endif %}
     </div>
 
@@ -21,10 +19,40 @@
             Нет данных для отображения. Добавьте книги через форму поиска.
         </div>
     {% else %}
-        <table class="table table-hover table-dark">
+        <!-- Фильтры -->
+        <div class="row mb-3">
+            <div class="col-1">
+                Фильтры:
+            </div>
+            <div class="col-md-3">
+                <select id="subjectFilter" class="form-select">
+                    <option value="">Все предметы</option>
+                    {% for subject in subjects|unique|sort %}
+                        <option value="{{ subject }}">{{ subject }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="classFilter" class="form-select">
+                    <option value="">Все классы</option>
+                    {% for class in classes|unique|sort %}
+                        <option value="{{ class }}">{{ class }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 align-self-end">
+                <button id="resetFilters" class="btn btn-secondary">Сбросить фильтры</button>
+            </div>
+            <div class="col-md-3 align-self-end">
+                <span id="filterCount" class="badge bg-info">Показано: {{ books|length }} из {{ books|length }}</span>
+            </div>
+        </div>
+
+        <table class="table table-striped table-hover" id="booksTable">
             <thead>
                 <tr>
                     <th scope="col">Обложка</th>
+                    <th scope="col">Предмет</th>
                     <th scope="col">Название</th>
                     <th scope="col">Авторы</th>
                     <th scope="col">Класс</th>
@@ -33,43 +61,48 @@
             </thead>
             <tbody>
                 {% for book in books %}
-                <tr id="row-{{ book.id }}">
-                    <th>
+                <tr id="row-{{ book.id }}" data-subject="{{ book.subject }}" data-class="{{ book.class_from }}">
+                    <td>
                         {% if book.image_url %}
                         <img class="rounded image zoom-image"
                              src="{{ book.image_url }}"
                              alt="Обложка книги"
                              style="max-width: 100px; max-height: 150px;"/>
                         {% else %}
-                        <span>Нет обложки</span>
+                        <span>Нет обложки/Ошибка загрузки</span>
                         {% endif %}
-                    </th>
-                    <th>
+                    </td>
+                    <td>
+                        {{ book.subject }}
+                    </td>
+                    <td>
                         <a href="{{ book.url }}" target="_blank">
                             {{ book.name if book.name else 'Без названия' }}
                         </a>
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                         {{ book.authors if book.authors else 'Авторы не указаны' }}
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                         {{ book.class_from }}
                         {% if book.class_to and book.class_to != book.class_from %}
                            - {{ book.class_to }}
                         {% endif %}
-
-                    </th>
-                    <th>
-                        <button class="btn btn-info view-btn" data-bs-toggle="modal" data-bs-target="#bookModal" data-id="{{ book.id }}">
+                    </td>
+                    <td>
+                        <button class="btn btn-info view-btn" data-id="{{ book.id }}" data-bs-toggle="modal"
+                                data-bs-target="#bookModal" title="Открыть все характеристики учебника">
                             {{ render_icon('eye') }}
                         </button>
-                        <button class="btn btn-success export-btn" data-id="{{ book.id }}">
+                        <button class="btn btn-success export-btn" data-id="{{ book.id }}"
+                                title="Экспортировать только этот учебник">
                             {{ render_icon('download') }}
                         </button>
-                        <button class="btn btn-danger delete-btn" data-id="{{ book.id }}">
+                        <button class="btn btn-danger delete-btn" data-id="{{ book.id }}"
+                                title="Удалить информацию об этом учебнике">
                             {{ render_icon('trash3') }}
                         </button>
-                    </th>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -79,14 +112,44 @@
     <!-- Модальное окно для просмотра и редактирования книги -->
     {% include 'modals/edit_book.html' %}
 
-
     {% block scripts %}
         {{ super() }}
     {% endblock %}
 
-
     <script>
         $(document).ready(function() {
+            // Функция фильтрации таблицы
+          function filterTable() {
+              const subject = $('#subjectFilter').val().toLowerCase();
+              const classValue = $('#classFilter').val().toLowerCase();
+              let visibleCount = 0;
+              const totalCount = $('#booksTable tbody tr').length;
+
+              $('#booksTable tbody tr').each(function() {
+                  const rowSubject = $(this).data('subject').toString().toLowerCase();
+                  const rowClass = $(this).data('class').toString().toLowerCase();
+
+                  const subjectMatch = subject === '' || rowSubject === subject;
+                  const classMatch = classValue === '' || rowClass === classValue;
+
+                  const isVisible = subjectMatch && classMatch;
+                  $(this).toggle(isVisible);
+
+                  if (isVisible) visibleCount++;
+              });
+
+              $('#filterCount').text(`Показано: ${visibleCount} из ${totalCount}`);
+          }
+
+            // Обработчики событий для фильтров
+            $('#subjectFilter, #classFilter').change(filterTable);
+
+            // Сброс фильтров
+            $('#resetFilters').click(function() {
+                $('#subjectFilter, #classFilter').val('');
+                filterTable();
+            });
+
             // Экспорт всех книг
             $('#exportAllBtn').click(function() {
                 if (confirm('Экспортировать все книги в ZIP архив? Архив будет содержать CSV файл и все изображения.')) {
