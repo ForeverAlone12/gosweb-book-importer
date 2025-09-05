@@ -1,11 +1,9 @@
 import csv
 import io
-import re
 from  zipfile import ZipFile, ZIP_DEFLATED
 from typing import List
 from models import Book, BookCharacteristick
 from services import BookService
-from transliterate import translit
 
 class ExportService:
     @staticmethod
@@ -36,9 +34,9 @@ class ExportService:
             io.TextIOWrapper(csv_buffer, encoding='utf-8-sig', newline='', write_through=True)
         )
 
-        headers = ['Image', 'Name', 'Authors', 'Series', 'ClassFrom', 'ClassTo', 'Subject', 'Program', 'Publisher',
-                   'Description', 'Type', 'File1', 'File2', 'TypeResource', 'IsOVZ', 'TypePayResurse', 'UrlResurse',
-                   'PublicationLanguage']
+        headers = ['Image', 'Name', 'Authors', 'Series', 'ClassFrom', 'ClassTo', 'Subject',
+                   'Program', 'Publisher', 'Description', 'Type', 'File1', 'File2', 'TypeResource',
+                   'IsOVZ', 'TypePayResurse', 'UrlResurse', 'PublicationLanguage']
 
         csv_writer.writerow(headers)
 

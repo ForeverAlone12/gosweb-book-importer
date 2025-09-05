@@ -74,7 +74,7 @@ class Book:
             'part': self.part or '',
             'type': self.type or '',
             'type_resourse': self.type_resourse or '',
-            'is_ovz' : self.is_ovz or False,
+            'is_ovz': self.is_ovz or False,
             'type_pay_resourse': self.type_pay_resourse or '',
             'publication_language': self.publication_language or '',
             'image_name': self.image_name,
@@ -154,15 +154,15 @@ class Book:
 
 
 class BookCharacteristick(str, Enum):
-    NAME = 'Название',
-    SERIES = 'Линия УМК, серия',
-    DESCRIPTION = 'Описание',
-    SUBJECT = 'Предмет',
-    PUBLISHER = 'Издательство',
-    TYPE = 'Вид литературы',
-    PUBLICATION_LANGUAGE = 'Язык',
-    CLASSES = 'Класс, возраст',
-    PROGRAM = 'Уровень образования',
-    PART = 'Часть',
-    AUTHORS = 'Авторы',
+    NAME = 'Название'
+    SERIES = 'Линия УМК, серия'
+    DESCRIPTION = 'Описание'
+    SUBJECT = 'Предмет'
+    PUBLISHER = 'Издательство'
+    TYPE = 'Вид литературы'
+    PUBLICATION_LANGUAGE = 'Язык'
+    CLASSES = 'Класс, возраст'
+    PROGRAM = 'Уровень образования'
+    PART = 'Часть'
+    AUTHORS = 'Авторы'
     IMAGE_SRC = 'image_src'
