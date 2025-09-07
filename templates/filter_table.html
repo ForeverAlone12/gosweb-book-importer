@@ -1,0 +1,97 @@
+<div class="row mb-3 align-items-end">
+    <div class="col-md-1 mb-2">
+        <strong>Фильтры:</strong>
+    </div>
+
+    <div class="col-md-2 mb-2">
+        <label class="form-label small mb-1">Предмет</label>
+        <select id="subjectFilter" class="form-select">
+            <option value="">Все предметы</option>
+            {% for subject in filters['subjects']|unique|sort %}
+                <option value="{{ subject }}">{{ subject }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-2 mb-2">
+        <label class="form-label small mb-1">Класс</label>
+        <select id="classFilter" class="form-select">
+            <option value="">Все классы</option>
+            {% for class in filters['classes']|unique|sort %}
+                <option value="{{ class }}">{{ class }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-2 mb-2">
+        <label class="form-label small mb-1">Программа</label>
+        <select id="programFilter" class="form-select">
+            <option value="">Все программы</option>
+            {% for program in filters['program']|unique|sort %}
+                <option value="{{ program }}">{{ program }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-2 mb-2">
+        <label class="form-label small mb-1">Серия</label>
+        <select id="seriesFilter" class="form-select">
+            <option value="">Все серии</option>
+            {% for series in filters['series']|unique|sort %}
+                <option value="{{ series }}">{{ series }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-2 mb-2">
+        <label class="form-label small mb-1">Действия</label>
+        <button id="resetFilters" class="btn btn-secondary w-100">Сбросить фильтры</button>
+    </div>
+
+    <div class="col-md-1 mb-2">
+        <label class="form-label small mb-1">Результаты</label>
+        <span id="filterCount" class="badge bg-info w-100 d-block py-2">Показано: {{ books|length }} из {{ books|length }}</span>
+    </div>
+</div>
+
+<script>
+    function filterTable() {
+        const filters = {};
+        let visibleCount = 0;
+        const totalCount = $('#booksTable tbody tr').length;
+
+        // Собираем все фильтры автоматически
+        $('[id$="Filter"]').each(function() {
+            const filterName = this.id.replace('Filter', '').toLowerCase();
+            filters[filterName] = $(this).val().toLowerCase();
+        });
+
+        $('#booksTable tbody tr').each(function() {
+            let isVisible = true;
+            const $row = $(this);
+
+            // Проверяем каждый фильтр
+            for (const [filterName, filterValue] of Object.entries(filters)) {
+                const rowValue = $row.data(filterName)?.toString().toLowerCase() || '';
+                if (filterValue !== '' && rowValue !== filterValue) {
+                    isVisible = false;
+                    break;
+                }
+            }
+
+            $row.toggle(isVisible);
+            if (isVisible) visibleCount++;
+        });
+
+        $('#filterCount').text(`Показано: ${visibleCount} из ${totalCount}`);
+    }
+
+    // Обработчики событий для всех фильтров
+    $(document).on('change', '[id$="Filter"]', filterTable);
+
+    // Сброс фильтров
+    $('#resetFilters').click(function() {
+        $('[id$="Filter"]').val('');
+        filterTable();
+    });
+</script>

@@ -14,6 +14,9 @@ from services import BookService, ExportService
 load_dotenv()
 
 app = Flask(__name__)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///books.db"
+
 Bootstrap5(app)
 
 # Регистрируем API blueprint
@@ -22,9 +25,21 @@ app.register_blueprint(api_bp)
 @app.route('/')
 def index():
     books = BookService.get_all_books()
+    filters = dict()
+
     subjects = list(set(book.subject for book in books if book.subject))
+    filters['subjects'] = subjects
+
     classes = list(set(book.class_from for book in books if book.class_from))
-    return render_template('index.html', books=books, subjects=subjects, classes=classes)
+    filters['classes'] = classes
+
+    program = list(set(book.program for book in books if book.program))
+    filters['program'] = program
+
+    series = list(set(book.series for book in books if book.series))
+    filters['series'] = series
+
+    return render_template('index.html', books=books, filters=filters)
 
 @app.route('/scrape', methods=['POST'])
 def scrape():
