@@ -2,12 +2,12 @@ import csv
 import io
 from  zipfile import ZipFile, ZIP_DEFLATED
 from typing import List
-from models import Book, BookCharacteristick
+from models import BookBase, BookCharacteristick
 from services import BookService
 
 class ExportService:
     @staticmethod
-    def export_books_to_zip(books: List[Book]) -> io.BytesIO:
+    def export_books_to_zip(books: List[BookBase]) -> io.BytesIO:
         """Экспорт всех книг в ZIP архив"""
         zip_buffer = io.BytesIO()
 
@@ -24,7 +24,7 @@ class ExportService:
         return zip_buffer
 
     @staticmethod
-    def _create_csv_data(books: List[Book]) -> bytes:
+    def _create_csv_data(books: List[BookBase]) -> bytes:
         """Создание CSV данных для всех книг"""
 
         csv_buffer = io.BytesIO()
@@ -71,7 +71,7 @@ class ExportService:
 
 
     @staticmethod
-    def _add_images_to_zip(zip_file: ZipFile, books: List[Book]):
+    def _add_images_to_zip(zip_file: ZipFile, books: List[BookBase]):
         """Добавление изображений в ZIP архив"""
         for book in books:
             if book.image_url and book.id:

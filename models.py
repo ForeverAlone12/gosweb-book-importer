@@ -4,10 +4,19 @@ from datetime import datetime
 from enum import Enum
 import re
 import base64
+
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Index
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from transliterate import translit
 
-@dataclass
-class Book:
+
+class Base(DeclarativeBase):
+  pass
+
+db = SQLAlchemy(model_class=Base)
+
+class BookBase(db.Model):
     """Данные учебника.
 
     Attributes:
@@ -34,29 +43,44 @@ class Book:
         image_type: Расширение файла обложки
         created_at: Дата создания информации
     """
+    __tablename__ = "books"
 
-    id: Optional[int] = None
-    url: Optional[str] = None
-    name: Optional[str] = None
-    authors: Optional[str] = None
-    series: Optional[str] = None
-    class_from: Optional[int] = None
-    class_to: Optional[int] = None
-    subject: Optional[str] = None
-    program: Optional[str] = None
-    publisher: Optional[str] = None
-    description: Optional[str] = None
-    part: Optional[int] = None
-    type: Optional[str] = None
-    type_resourse: Optional[str] = None
-    is_ovz: Optional[bool] = False
-    type_pay_resourse: Optional[str] = None
-    publication_language: Optional[str] = None
-    image_name: Optional[str] = None
-    image_data: Optional[bytes] = None
-    image_url: Optional[str] = None
-    image_type: Optional[str] = None
-    created_at: Optional[datetime] = None
+    id: Mapped[Optional[int]] = mapped_column(db.Integer, primary_key=True, autoincrement=True)
+    url: Mapped[Optional[str]] = mapped_column(db.Text, nullable=False)
+    name: Mapped[Optional[str]] = mapped_column(db.Text, nullable=False)
+    authors: Mapped[Optional[str]] = mapped_column(db.Text, nullable=False)
+    series: Mapped[Optional[str]] = mapped_column(db.Text)
+    class_from: Mapped[Optional[int]] = mapped_column(db.Integer)
+    class_to: Mapped[Optional[int]] = mapped_column(db.Integer)
+    subject: Mapped[Optional[str]] = mapped_column(db.Text)
+    program: Mapped[Optional[str]] = mapped_column(db.Text)
+    publisher: Mapped[Optional[str]] = mapped_column(db.Text)
+    description: Mapped[Optional[str]] = mapped_column(db.Text)
+    part: Mapped[Optional[int]] = mapped_column(db.Integer)
+    type: Mapped[Optional[str]] = mapped_column(db.Text)
+    type_resourse: Mapped[Optional[str]] = mapped_column(db.Text)
+    is_ovz: Mapped[Optional[bool]] = mapped_column(db.Boolean, default=False)
+    type_pay_resourse: Mapped[Optional[str]] = mapped_column(db.Text)
+    publication_language: Mapped[Optional[str]] = mapped_column(db.Text)
+    image_name: Mapped[Optional[str]] = mapped_column(db.Text)
+    image_data: Mapped[Optional[bytes]] = mapped_column(db.LargeBinary)
+    image_url: Mapped[Optional[str]] = mapped_column(db.Text)
+    image_type: Mapped[Optional[str]] = mapped_column(db.Text)
+    created_at: Mapped[Optional[datetime]] = mapped_column(db.DateTime, default=datetime.now)
+
+    # Индексы
+    # __table_args__ = (
+    #     Index('books_url_idx', 'url'),
+    #     Index('books_authors_idx', 'authors'),
+    #     Index('books_series_idx', 'series'),
+    #     Index('books_class_from_idx', 'class_from'),
+    #     Index('books_class_from_class_to_idx', 'class_from', 'class_to'),
+    #     Index('books_part_idx', 'part'),
+    #     Index('books_program_idx', 'program'),
+    #     Index('books_publisher_idx', 'publisher'),
+    #     Index('books_series_idx', 'series'),
+    #     Index('books_subject_idx', 'subject'),
+    # )
 
     def to_dict(self, include_image: bool = False) -> Dict[str, Any]:
         """Конвертирует объект книги в словарь"""
@@ -64,6 +88,7 @@ class Book:
             'id': self.id,
             'url': self.url,
             'name': self.name,
+            'authors': self.authors,
             'series': self.series or '',
             'class_from': self.class_from,
             'class_to': self.class_to if self.class_from != self.class_to else '',
@@ -90,7 +115,7 @@ class Book:
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Book':
+    def from_dict(cls, data: Dict[str, Any]) -> 'BookBase':
         """Создает объект книги из данных."""
 
         image_data = base64.b64decode(data['image_data_base64']) if data.get('image_data_base64') else None

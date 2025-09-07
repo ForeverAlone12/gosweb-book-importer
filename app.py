@@ -3,8 +3,9 @@ from datetime import datetime
 
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file
 from flask_bootstrap import Bootstrap5
+from flask_migrate import Migrate
 
-from models import BookCharacteristick
+from models import BookCharacteristick, db
 from scraper import Scraper
 from dotenv import load_dotenv
 
@@ -16,6 +17,11 @@ load_dotenv()
 app = Flask(__name__)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///books.db"
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+
+migrate = Migrate(app, db)
 
 Bootstrap5(app)
 
