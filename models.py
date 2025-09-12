@@ -46,7 +46,7 @@ class BookBase(db.Model):
     __tablename__ = "books"
 
     id: Mapped[Optional[int]] = mapped_column(db.Integer, primary_key=True, autoincrement=True)
-    url: Mapped[Optional[str]] = mapped_column(db.Text, nullable=False)
+    url: Mapped[Optional[str]] = mapped_column(db.Text)
     name: Mapped[Optional[str]] = mapped_column(db.Text, nullable=False)
     authors: Mapped[Optional[str]] = mapped_column(db.Text, nullable=False)
     series: Mapped[Optional[str]] = mapped_column(db.Text)
@@ -69,18 +69,18 @@ class BookBase(db.Model):
     created_at: Mapped[Optional[datetime]] = mapped_column(db.DateTime, default=datetime.now)
 
     # Индексы
-    # __table_args__ = (
-    #     Index('books_url_idx', 'url'),
-    #     Index('books_authors_idx', 'authors'),
-    #     Index('books_series_idx', 'series'),
-    #     Index('books_class_from_idx', 'class_from'),
-    #     Index('books_class_from_class_to_idx', 'class_from', 'class_to'),
-    #     Index('books_part_idx', 'part'),
-    #     Index('books_program_idx', 'program'),
-    #     Index('books_publisher_idx', 'publisher'),
-    #     Index('books_series_idx', 'series'),
-    #     Index('books_subject_idx', 'subject'),
-    # )
+    __table_args__ = (
+        Index('books_url_idx', 'url'),
+        Index('books_authors_idx', 'authors'),
+        Index('books_series_idx', 'series'),
+        Index('books_class_from_idx', 'class_from'),
+        Index('books_class_from_class_to_idx', 'class_from', 'class_to'),
+        Index('books_part_idx', 'part'),
+        Index('books_program_idx', 'program'),
+        Index('books_publisher_idx', 'publisher'),
+        Index('books_series_idx', 'series'),
+        Index('books_subject_idx', 'subject'),
+    )
 
     def to_dict(self, include_image: bool = False) -> Dict[str, Any]:
         """Конвертирует объект книги в словарь"""
